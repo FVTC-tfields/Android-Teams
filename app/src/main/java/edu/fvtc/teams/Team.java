@@ -67,10 +67,11 @@ public class Team {
 
     public Team()
     {
+        this.id = -1;
         this.name = "";
         this.city = "";
         this.cellPhone = "";
-        this.rating = 0;
+        this.rating = 0.0f;
         this.imgId = 0;
         this.isFavorite = false;
     }
@@ -83,6 +84,7 @@ public class Team {
                 boolean isFavorite,
                 int imgId)
     {
+        this.id = id;
         this.name = name;
         this.city = city;
         this.cellPhone = cellPhone;

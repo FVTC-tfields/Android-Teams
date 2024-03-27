@@ -98,8 +98,10 @@ public class FileIO {
                     {
                         Log.d(TAG, "ReadFromXMLFile: Start Team Parsing");
                         int id = Integer.parseInt(xmlPullParser.getAttributeValue(null, "id"));
-                        String firstName = xmlPullParser.getAttributeValue(null, "firstname");
-                        String lastName = xmlPullParser.getAttributeValue(null, "lastname");
+                        String name = xmlPullParser.getAttributeValue(null, "name");
+                        String city = xmlPullParser.getAttributeValue(null, "city");
+                        String cellphone = xmlPullParser.getAttributeValue(null, "cellphone");
+                        Float rating = Float.valueOf(xmlPullParser.getAttributeValue(null, "rating"));
                         Team team = new Team();
                         teams.add(team);
                         Log.d(TAG, "ReadFromXMLFile: " + team.toString());
@@ -144,8 +146,10 @@ public class FileIO {
             {
                 serializer.startTag("", "Team");
                 serializer.attribute("", "id", String.valueOf(Team.getId()));
-                //serializer.attribute("", "firstname", String.valueOf(Team.getFirstName()));
-                //serializer.attribute("", "lastname", String.valueOf(Team.getLastName()));
+                serializer.attribute("", "name", String.valueOf(Team.getName()));
+                serializer.attribute("", "city", String.valueOf(Team.getCity()));
+                serializer.attribute("", "cellphone", String.valueOf(Team.getCellPhone()));
+                serializer.attribute("", "rating", String.valueOf(Team.getRating()));
                 serializer.endTag("", "Team");
                 Log.d(TAG, "WriteXMLFile: " + Team.toString());
             }

@@ -4,7 +4,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
 
 import java.util.ArrayList;
 
@@ -15,6 +18,20 @@ public class TeamsListActivity extends AppCompatActivity {
         RecyclerView teamList;
         TeamsAdapter teamsAdapter;
 
+        private View.OnClickListener onClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                RecyclerView.ViewHolder viewHolder = (RecyclerView.ViewHolder) v.getTag();
+                int position = viewHolder.getAdapterPosition();
+                Team team = teams.get(position);
+                Log.d(TAG, "onClick: " + team.getName());
+                Intent intent = new Intent(TeamsListActivity.this, TeamsEditActivity.class);
+                intent.putExtra("teamid", team.getId());
+                Log.d(TAG, "onClick: " + team.getId());
+                startActivity(intent);
+            }
+        };
+        
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,6 +43,8 @@ public class TeamsListActivity extends AppCompatActivity {
 
         this.setTitle("List");
 
+        teams = new ArrayList<Team>();
+
         if(teams.size() == 0)
             createTeams();
 
@@ -34,11 +53,12 @@ public class TeamsListActivity extends AppCompatActivity {
 
     private void RebindTeams() {
         // Rebind the Recycler
-
+        Log.d(TAG, "RebindTeams: Start");
         teamList = findViewById(R.id.rvTeams);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         teamList.setLayoutManager(layoutManager);
         teamsAdapter = new TeamsAdapter(teams, this);
+        teamsAdapter.setOnItemClickListener(onClickListener);
         teamList.setAdapter(teamsAdapter);
     }
 
