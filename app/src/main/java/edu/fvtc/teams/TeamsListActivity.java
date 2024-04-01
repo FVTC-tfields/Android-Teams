@@ -1,6 +1,7 @@
 package edu.fvtc.teams;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -8,6 +9,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.CompoundButton;
 
 import java.util.ArrayList;
 
@@ -31,6 +34,24 @@ public class TeamsListActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         };
+
+    private CompoundButton.OnCheckedChangeListener onCheckedChangeListener = new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+            Log.d(TAG, "onCheckedChanged: " + isChecked);
+            RecyclerView.ViewHolder viewHolder = (RecyclerView.ViewHolder) buttonView.getTag();
+            int position = viewHolder.getAdapterPosition();
+
+            teams.get(position).setFavorite(isChecked);
+
+            //teams.remove(teams.get(position));
+
+            FileIO.writeFile(TeamsListActivity.FILENAME,
+                    TeamsListActivity.this,
+                    createDataArray(teams));
+        }
+    };
         
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,10 +66,37 @@ public class TeamsListActivity extends AppCompatActivity {
 
         teams = new ArrayList<Team>();
 
+        teams = readTeams(this);
         if(teams.size() == 0)
             createTeams();
-
+        initDeleteSwitch();
+        initAddTeamButton();
         RebindTeams();
+    }
+
+    private void initDeleteSwitch() {
+        SwitchCompat switchDelete = findViewById(R.id.switchDelete);
+        switchDelete.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Log.d(TAG, "onCheckedChanged: " + isChecked);
+                teamsAdapter.setDelete(isChecked);
+                teamsAdapter.notifyDataSetChanged();
+            }
+        });
+    }
+
+    private void initAddTeamButton() {
+        Button btnAddTeam = findViewById(R.id.btnAddTeam);
+        btnAddTeam.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(TeamsListActivity.this, TeamsEditActivity.class);
+                intent.putExtra("teamid", -1);
+                Log.d(TAG, "onClick: ");
+                startActivity(intent);
+            }
+        });
     }
 
     private void RebindTeams() {
@@ -59,6 +107,7 @@ public class TeamsListActivity extends AppCompatActivity {
         teamList.setLayoutManager(layoutManager);
         teamsAdapter = new TeamsAdapter(teams, this);
         teamsAdapter.setOnItemClickListener(onClickListener);
+        teamsAdapter.setOnItemCheckedChangeListener(onCheckedChangeListener);
         teamList.setAdapter(teamsAdapter);
     }
 
@@ -69,5 +118,36 @@ public class TeamsListActivity extends AppCompatActivity {
         teams.add(new Team(2, "Lions", "Detroit", "9204441234", 2, false, R.drawable.lions));
         teams.add(new Team(3, "Vikings", "Minneapolis", "9203331234", 4, false, R.drawable.vikings));
         teams.add(new Team(4, "Bears", "Chicago", "9202221234", 4, false, R.drawable.bears));
+
+        FileIO.writeFile(FILENAME, this, createDataArray(teams));
+        teams = readTeams(this);
+    }
+
+    public static ArrayList<Team> readTeams(AppCompatActivity activity) {
+        ArrayList<String> strData = FileIO.readFile(FILENAME, activity);
+        ArrayList<Team> teams = new ArrayList<Team>();
+        for(String s : strData)
+        {
+            Log.d(TAG, "readTeams: " + s);
+            String[] data = s.split("\\|");
+            teams.add(new Team(
+                    Integer.parseInt(data[0]),
+                    data[1],
+                    data[2],
+                    data[3],
+                    Float.parseFloat(data[4]),
+                    Boolean.parseBoolean(data[5]),
+                    Integer.parseInt(data[6])
+            ));
+        }
+        Log.d(TAG, "readTeams: " + teams.size());
+        return teams;
+    }
+    public static String[] createDataArray(ArrayList<Team> teams) {
+        String[] teamData = new String[teams.size()];
+        for (int count = 0; count < teams.size(); count++) {
+            teamData[count] = teams.get(count).toString();
+        }
+        return teamData;
     }
 }
