@@ -99,7 +99,7 @@ public class  TeamsAdapter extends RecyclerView.Adapter {
         TeamViewHolder teamViewHolder = (TeamViewHolder) holder;
         teamViewHolder.getTvName().setText(teamData.get(position).getName());
         teamViewHolder.getTvCity().setText(teamData.get(position).getCity());
-        teamViewHolder.getChkFavorite().setChecked(teamData.get(position).isFavorite());
+        teamViewHolder.getChkFavorite().setChecked(teamData.get(position).getIsFavorite());
         teamViewHolder.getImageButtonPhoto().setImageResource(teamData.get(position).getImgId());
 
         if(isDeleting)
@@ -111,8 +111,7 @@ public class  TeamsAdapter extends RecyclerView.Adapter {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 Log.d(TAG, "onCheckedChanged: " + isChecked);
-                favoriteChanged(isChecked);
-                //onItemCheckedChangeListener.onCheckedChanged(buttonView, isChecked);
+                onItemCheckedChangeListener.onCheckedChanged(buttonView, isChecked);
             }
         });
 
@@ -132,7 +131,13 @@ public class  TeamsAdapter extends RecyclerView.Adapter {
 
     private void deleteItem(int position)
     {
-
+        Log.d(TAG, "deleteItem: " + position);
+        teamData.remove(position);
+        //FileIO.writeFile(TeamsListActivity.FILENAME,
+        //                (AppCompatActivity) parentContext.getApplicationContext(),
+        //                TeamsListActivity.createDataArray(teamData));
+        //                TeamsListActivity.createDataArray(teamData));
+        //                notifyDataSetChanged();
     }
 
     @Override
