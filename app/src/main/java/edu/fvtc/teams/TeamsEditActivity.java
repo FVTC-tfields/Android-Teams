@@ -38,7 +38,7 @@ public class TeamsEditActivity extends AppCompatActivity implements RaterDialog.
         if(teamId != -1)
         {
             // Get the team
-            initTeam(teamId-1);
+            initTeam(teamId);
         }
         else {
             team = new Team();
@@ -57,7 +57,7 @@ public class TeamsEditActivity extends AppCompatActivity implements RaterDialog.
         initTextChanged(R.id.editCell);
 
         // Get the teams
-        teams = TeamsListActivity.readTeams(this);
+        //teams = TeamsListActivity.readTeams(this);
 
         setForEditting(false);
         Log.d(TAG, "onCreate: End");
@@ -68,18 +68,22 @@ public class TeamsEditActivity extends AppCompatActivity implements RaterDialog.
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                TeamsDataSource ds = new TeamsDataSource(TeamsEditActivity.this);
+                ds.open();
                 if(teamId == -1)
                 {
                     Log.d(TAG, "onClick: " + team.toString());
                     team.setId(teams.get(teams.size()-1).getId() + 1);
                     teams.add(team);
+                    ds.insert(team);
                 }
                 else {
-                    teams.set(teamId - 1, team);
+                    teams.set(teamId, team);
+                    ds.update(team);
                 }
-                FileIO.writeFile(TeamsListActivity.FILENAME,
-                        TeamsEditActivity.this,
-                        TeamsListActivity.createDataArray(teams));
+               // FileIO.writeFile(TeamsListActivity.FILENAME,
+               //         TeamsEditActivity.this,
+               //         TeamsListActivity.createDataArray(teams));
             }
         });
     }
@@ -128,9 +132,13 @@ public class TeamsEditActivity extends AppCompatActivity implements RaterDialog.
     }
     private void initTeam(int teamId) {
         // Get the teams
-        teams = TeamsListActivity.readTeams(this);
+        //teams = TeamsListActivity.readTeams(this);
         // Get the team
-        team = teams.get(teamId);
+        //team = teams.get(teamId);
+        Log.d(TAG, "initTeam: " + teamId);
+        TeamsDataSource ds = new TeamsDataSource(TeamsEditActivity.this);
+        teams = ds.get();
+        team = ds.get(teamId);
         rebindTeam();
     }
     private void rebindTeam() {

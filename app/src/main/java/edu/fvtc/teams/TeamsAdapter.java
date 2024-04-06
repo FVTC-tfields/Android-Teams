@@ -132,12 +132,20 @@ public class  TeamsAdapter extends RecyclerView.Adapter {
     private void deleteItem(int position)
     {
         Log.d(TAG, "deleteItem: " + position);
+        Team team = teamData.get(position);
         teamData.remove(position);
         //FileIO.writeFile(TeamsListActivity.FILENAME,
         //                (AppCompatActivity) parentContext.getApplicationContext(),
         //                TeamsListActivity.createDataArray(teamData));
         //                TeamsListActivity.createDataArray(teamData));
         //                notifyDataSetChanged();
+
+        Log.d(TAG, "deleteItem: parentContext: " + parentContext);
+        TeamsDataSource ds = new TeamsDataSource(parentContext);
+        Log.d(TAG, "deleteItem: " + team.toString());
+        boolean didDelete = ds.delete(team) > 0;
+        Log.d(TAG, "deleteItem: " + didDelete);
+        notifyDataSetChanged();
     }
 
     @Override
