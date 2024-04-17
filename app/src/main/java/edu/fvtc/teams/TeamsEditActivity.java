@@ -1,12 +1,19 @@
 package edu.fvtc.teams;
 
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentManager;
 
+import android.Manifest;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -69,7 +76,26 @@ public class TeamsEditActivity extends AppCompatActivity implements RaterDialog.
         //teams = TeamsListActivity.readTeams(this);
 
         setForEditting(false);
+        initImageButton();
         Log.d(TAG, "onCreate: End");
+    }
+
+    protected  void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode == CAMERA_REQUEST)
+        {
+            if(resultCode == RESULT_OK)
+            {
+                Log.d(TAG, "onActivityResult: Here");
+                Bitmap photo= (Bitmap)data.getExtras().get("data");
+                Bitmap scaledPhoto = Bitmap.createScaledBitmap(photo, 144, 144, true);
+                ImageButton imageButton = findViewById(R.id.imageTeam);
+                imageButton.setImageBitmap(scaledPhoto);
+                team.setPhoto(scaledPhoto);
+            }
+        }
     }
 
     private void initImageButton() {
@@ -82,7 +108,7 @@ public class TeamsEditActivity extends AppCompatActivity implements RaterDialog.
                     // Check for the manifest permission
                     if(ContextCompat.checkSelfPermission(TeamsEditActivity.this, Manifest.permission.CAMERA) != PERMISSION_GRANTED){
                         if(ActivityCompat.shouldShowRequestPermissionRationale(TeamsEditActivity.this, Manifest.permission.CAMERA)){
-                            Snackbar.make(findViewById(R.id.activity_main), "Teams requires this permission to take a photo.",
+                            Snackbar.make(findViewById(R.id.activity_teams_edit), "Teams requires this permission to take a photo.",
                                     Snackbar.LENGTH_INDEFINITE).setAction("OK", new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
@@ -112,6 +138,8 @@ public class TeamsEditActivity extends AppCompatActivity implements RaterDialog.
         });
     }
     private void takePhoto() {
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(cameraIntent, CAMERA_REQUEST);
     }
     private void readFromAPI(int teamId)
     {
@@ -237,10 +265,19 @@ public class TeamsEditActivity extends AppCompatActivity implements RaterDialog.
         EditText editCity = findViewById(R.id.etCity);
         EditText editCellPhone = findViewById(R.id.editCell);
         TextView editRating = findViewById(R.id.txtRating);
+        ImageButton imageButtonPhoto = findViewById(R.id.imageTeam);
+
         editName.setText(team.getName());
         editCity.setText(team.getCity());
         editCellPhone.setText(team.getCellPhone());
         editRating.setText(String.valueOf(team.getRating()));
+
+        if(team.getPhoto() == null)
+        {
+            Log.d(TAG, "rebindTeam: Null photo");
+            team.setPhoto(BitmapFactory.decodeResource(this.getResources(), R.drawable.photoicon));
+        }
+        imageButtonPhoto.setImageBitmap(team.getPhoto());
     }
 
     private void initRatingButton()

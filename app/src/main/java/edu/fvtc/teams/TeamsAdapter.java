@@ -100,7 +100,10 @@ public class  TeamsAdapter extends RecyclerView.Adapter {
         teamViewHolder.getTvName().setText(teamData.get(position).getName());
         teamViewHolder.getTvCity().setText(teamData.get(position).getCity());
         teamViewHolder.getChkFavorite().setChecked(teamData.get(position).getIsFavorite());
-        teamViewHolder.getImageButtonPhoto().setImageResource(teamData.get(position).getImgId());
+        //teamViewHolder.getImageButtonPhoto().setImageResource(teamData.get(position).getImgId());
+
+        if(teamData.get(position).getPhoto() != null)
+            teamViewHolder.getImageButtonPhoto().setImageBitmap(teamData.get(position).getPhoto());
 
         if(isDeleting)
             teamViewHolder.getBtnDelete().setVisibility(View.VISIBLE);

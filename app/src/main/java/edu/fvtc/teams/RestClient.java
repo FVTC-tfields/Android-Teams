@@ -2,6 +2,7 @@ package edu.fvtc.teams;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Base64;
 import android.util.Log;
 
@@ -54,6 +55,15 @@ public class RestClient {
 
                                     //team.setLatitude(object.getDouble("latitude"));
                                     //team.setLongitude(object.getDouble("longitude"));
+
+                                    String jsonPhoto = object.getString("photo");
+                                    if(jsonPhoto != null)
+                                    {
+                                        byte[] bytePhoto = null;
+                                        bytePhoto = Base64.decode(jsonPhoto, Base64.DEFAULT);
+                                        Bitmap bmp = BitmapFactory.decodeByteArray(bytePhoto, 0, bytePhoto.length);
+                                        team.setPhoto(bmp);
+                                    }
 
                                     teams.add(team);
 
@@ -132,7 +142,7 @@ public class RestClient {
             object.put("cellNumber", team.getCellPhone());
             object.put("isFavorite", team.getIsFavorite());
 
-            /*
+
             if(team.getPhoto() != null)
             {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -146,8 +156,7 @@ public class RestClient {
             {
                 object.put("photo", null);
             }
-            \
-            */
+
 
             final String requestBody = object.toString();
             Log.d(TAG, "executeRequest: " + requestBody);
@@ -208,15 +217,16 @@ public class RestClient {
                                 //team.setLatitude(object.getDouble("latitude"));
                                 //team.setLongitude(object.getDouble("longitude"));
 
-                                //String jsonPhoto = object.getString("photo");
+                                String jsonPhoto = object.getString("photo");
 
-                                //if(jsonPhoto != null)
-                                //{
-                                //    byte[] bytePhoto = null;
-                                //    bytePhoto = Base64.decode(jsonPhoto, Base64.DEFAULT);
-                                //    Bitmap bmp = BitmapFactory.decodeByteArray(bytePhoto, 0, bytePhoto.length);
-                                //    team.setPhoto(bmp);
-                                //}
+                                if(jsonPhoto != null)
+                                {
+                                    Log.d(TAG, "onResponse: Process Photo");
+                                    byte[] bytePhoto = null;
+                                    bytePhoto = Base64.decode(jsonPhoto, Base64.DEFAULT);
+                                    Bitmap bmp = BitmapFactory.decodeByteArray(bytePhoto, 0, bytePhoto.length);
+                                    team.setPhoto(bmp);
+                                }
 
                                 teams.add(team);
 
