@@ -159,6 +159,14 @@
 
             </androidx.appcompat.widget.LinearLayoutCompat>
 
+            <ImageButton
+                android:id="@+id/imageTeam"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/photoicon"
+                tools:layout_editor_absoluteX="288dp"
+                tools:layout_editor_absoluteY="36dp" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 

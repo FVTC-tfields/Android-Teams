@@ -1,8 +1,11 @@
 package edu.fvtc.teams;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentManager;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -10,14 +13,20 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.ToggleButton;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 
 public class TeamsEditActivity extends AppCompatActivity implements RaterDialog.SaveRatingListener {
     public static final String TAG = TeamsEditActivity.class.toString();
+    public static final int PERMISSION_REQUEST_PHONE = 102;
+    public static final int PERMISSION_REQUEST_CAMERA = 103;
+    public static final int CAMERA_REQUEST = 1888;
     Team team;
     boolean loading = true;
     int teamId = -1;
@@ -63,23 +72,102 @@ public class TeamsEditActivity extends AppCompatActivity implements RaterDialog.
         Log.d(TAG, "onCreate: End");
     }
 
+    private void initImageButton() {
+        ImageButton imageTeam = findViewById(R.id.imageTeam);
+        imageTeam.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(Build.VERSION.SDK_INT >= 23)
+                {
+                    // Check for the manifest permission
+                    if(ContextCompat.checkSelfPermission(TeamsEditActivity.this, Manifest.permission.CAMERA) != PERMISSION_GRANTED){
+                        if(ActivityCompat.shouldShowRequestPermissionRationale(TeamsEditActivity.this, Manifest.permission.CAMERA)){
+                            Snackbar.make(findViewById(R.id.activity_main), "Teams requires this permission to take a photo.",
+                                    Snackbar.LENGTH_INDEFINITE).setAction("OK", new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    Log.d(TAG, "onClick: snackBar");
+                                    ActivityCompat.requestPermissions(TeamsEditActivity.this,
+                                            new String[] {Manifest.permission.CAMERA},PERMISSION_REQUEST_PHONE);
+                                }
+                            }).show();
+                        }
+                        else {
+                            Log.d(TAG, "onClick: ");
+                            ActivityCompat.requestPermissions(TeamsEditActivity.this,
+                                    new String[] {Manifest.permission.CAMERA},PERMISSION_REQUEST_PHONE);
+                            takePhoto();
+                        }
+                    }
+                    else{
+                        Log.d(TAG, "onClick: ");
+                        takePhoto();
+                    }
+                }
+                else {
+                    // Only rely on the previous permissions
+                    takePhoto();
+                }
+            }
+        });
+    }
+    private void takePhoto() {
+    }
+    private void readFromAPI(int teamId)
+    {
+        try{
+            Log.d(TAG, "readFromAPI: Start");
+            RestClient.execGetOneRequest(getString(R.string.api_url) + teamId,
+                    this,
+                    new VolleyCallback() {
+                        @Override
+                        public void onSuccess(ArrayList<Team> result) {
+                            Log.d(TAG, "onSuccess: Got Here!");
+                            team = result.get(0);
+                            rebindTeam();
+                        }
+                    });
+        }
+        catch(Exception e){
+            Log.e(TAG, "readFromAPI: Error: " + e.getMessage());
+        }
+    }
+
     private void initSaveButton() {
         Button btnSave = findViewById(R.id.btnSave);
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                TeamsDataSource ds = new TeamsDataSource(TeamsEditActivity.this);
-                ds.open();
+                //TeamsDataSource ds = new TeamsDataSource(TeamsEditActivity.this);
+                //ds.open();
                 if(teamId == -1)
                 {
                     Log.d(TAG, "onClick: " + team.toString());
-                    team.setId(ds.getNewId());
+                    //team.setId(ds.getNewId());
                     //teams.add(team);
-                    ds.insert(team);
+                    //ds.insert(team);
+
+                    RestClient.execPostRequest(team, getString(R.string.api_url),
+                            TeamsEditActivity.this,
+                            new VolleyCallback() {
+                                @Override
+                                public void onSuccess(ArrayList<Team> result) {
+                                    team.setId(result.get(0).getId());
+                                    Log.d(TAG, "onSuccess: Post" + team.getId());
+                                }
+                            });
                 }
                 else {
                     //teams.set(teamId, team);
-                    ds.update(team);
+                    //ds.update(team);
+                    RestClient.execPutRequest(team, getString(R.string.api_url) + teamId,
+                            TeamsEditActivity.this,
+                            new VolleyCallback() {
+                                @Override
+                                public void onSuccess(ArrayList<Team> result) {
+                                    Log.d(TAG, "onSuccess: Put" + team.getId());
+                                }
+                            });
                 }
                // FileIO.writeFile(TeamsListActivity.FILENAME,
                //         TeamsEditActivity.this,
@@ -136,10 +224,13 @@ public class TeamsEditActivity extends AppCompatActivity implements RaterDialog.
         // Get the team
         //team = teams.get(teamId);
         Log.d(TAG, "initTeam: " + teamId);
-        TeamsDataSource ds = new TeamsDataSource(TeamsEditActivity.this);
+
+        //TeamsDataSource ds = new TeamsDataSource(TeamsEditActivity.this);
         //teams = ds.get();
-        team = ds.get(teamId);
-        rebindTeam();
+        //team = ds.get(teamId);
+        //rebindTeam();
+
+        readFromAPI(teamId);
     }
     private void rebindTeam() {
         EditText editName = findViewById(R.id.etName);

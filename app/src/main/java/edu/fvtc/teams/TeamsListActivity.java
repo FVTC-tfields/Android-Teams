@@ -66,7 +66,8 @@ public class TeamsListActivity extends AppCompatActivity {
         this.setTitle("List");
         teams = new ArrayList<Team>();
 
-        initDatabase();
+        //initDatabase();
+        readFromAPI();
 
         //teams = readTeams(this);
         //if(teams.size() == 0) {
@@ -75,7 +76,7 @@ public class TeamsListActivity extends AppCompatActivity {
 
         initDeleteSwitch();
         initAddTeamButton();
-        RebindTeams();
+        //RebindTeams();
     }
 
     private void initDatabase() {
@@ -145,6 +146,26 @@ public class TeamsListActivity extends AppCompatActivity {
         teams = ds.get("Name", "ASC");
 
         Log.d(TAG, "createTeams: End" + teams.size());
+    }
+
+    private void readFromAPI()
+    {
+        try{
+            Log.d(TAG, "readFromAPI: Start");
+            RestClient.execGetRequest(getString(R.string.api_url),
+                    this,
+                    new VolleyCallback() {
+                        @Override
+                        public void onSuccess(ArrayList<Team> result) {
+                            Log.d(TAG, "onSuccess: Got Here!");
+                            teams = result;
+                            RebindTeams();
+                        }
+                    });
+        }
+        catch(Exception e){
+            Log.e(TAG, "readFromAPI: Error: " + e.getMessage());
+        }
     }
 
     public static ArrayList<Team> readTeams(AppCompatActivity activity) {
