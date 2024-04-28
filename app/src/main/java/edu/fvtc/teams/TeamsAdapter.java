@@ -150,11 +150,10 @@ public class  TeamsAdapter extends RecyclerView.Adapter {
                 new VolleyCallback() {
                     @Override
                     public void onSuccess(ArrayList<Team> result) {
-                        teamData.remove(team);
-                        notifyDataSetChanged();
-                        Log.d(TAG, "deleteItem");
                     }
                 });
+        teamData.remove(team);
+        notifyDataSetChanged();
 
         //TeamsDataSource ds = new TeamsDataSource(parentContext);
         //Log.d(TAG, "deleteItem: " + team.toString());
