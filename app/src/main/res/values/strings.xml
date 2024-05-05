@@ -23,4 +23,8 @@
     <string name="descending">Descending</string>
     <string name="team_settings">Settings\n</string>
     <string name="api_url">https://fvtcdp.azurewebsites.net/api/Team/</string>
+    <string name="address">Address:</string>
+    <string name="enter_street_address">Enter Street Address</string>
+    <string name="wnw">wnw</string>
+    <string name="team_map_activity">Team Map Activity</string>
 </resources>

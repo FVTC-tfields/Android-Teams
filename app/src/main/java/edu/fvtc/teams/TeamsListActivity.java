@@ -5,15 +5,21 @@ import androidx.appcompat.widget.SwitchCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.BatteryManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class TeamsListActivity extends AppCompatActivity {
         public static final String TAG = "TeamsListActivity";
@@ -21,8 +27,11 @@ public class TeamsListActivity extends AppCompatActivity {
         ArrayList<Team> teams;
         RecyclerView teamList;
         TeamsAdapter teamsAdapter;
+        Comparator<Team> nameComparator = (c1, c2) -> c1.getName().compareTo(c2.getName());
+        Comparator<Team> cityComparator = (c1, c2) -> c1.getCity().compareTo(c2.getCity());
+        Comparator<Team> isFavoriteComparator = (c1, c2) -> (String.valueOf(c1.getIsFavorite()).compareTo(String.valueOf(c2.getIsFavorite())));
 
-        private View.OnClickListener onClickListener = new View.OnClickListener() {
+    private View.OnClickListener onClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 RecyclerView.ViewHolder viewHolder = (RecyclerView.ViewHolder) v.getTag();
@@ -77,6 +86,22 @@ public class TeamsListActivity extends AppCompatActivity {
         initDeleteSwitch();
         initAddTeamButton();
         //RebindTeams();
+
+        // Get the battery life
+        BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                double batteryLevel = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0);
+                double levelScale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, 0);
+                int batteryPercent = (int)Math.floor(batteryLevel / levelScale * 100);
+
+                TextView txtBatteryLevel = findViewById(R.id.txtBatteryLevel);
+                txtBatteryLevel.setText(batteryPercent + "%");
+            }
+        };
+
+        IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+        registerReceiver(broadcastReceiver, filter);
     }
 
     private void initDatabase() {
@@ -188,6 +213,28 @@ public class TeamsListActivity extends AppCompatActivity {
         Log.d(TAG, "readTeams: " + teams.size());
         return teams;
     }
+
+    private void sortTeams(ArrayList<Team> teams)
+    {
+        String sortBy = getSharedPreferences("teamspreferences",
+                Context.MODE_PRIVATE)
+                .getString("sortfield", "name");
+        String sortOrder = getSharedPreferences("teamspreferences",
+                Context.MODE_PRIVATE)
+                .getString("sortorder", "ASC");
+        Log.d(TAG, "sortTeams: " + sortBy + ":" + sortOrder);
+        if(sortOrder =="ASC") {
+            if (sortBy == "name") teams.sort(nameComparator);
+            if (sortBy == "city") teams.sort(cityComparator);
+            if (sortBy == "isfavorite") teams.sort(isFavoriteComparator);
+        }
+        else {
+            if (sortBy == "name") teams.sort(Collections.reverseOrder(nameComparator));
+            if (sortBy == "city") teams.sort(Collections.reverseOrder(cityComparator));
+            if (sortBy == "isfavorite") teams.sort(Collections.reverseOrder(isFavoriteComparator));
+        }
+    }
+
     public static String[] createDataArray(ArrayList<Team> teams) {
         String[] teamData = new String[teams.size()];
         for (int count = 0; count < teams.size(); count++) {

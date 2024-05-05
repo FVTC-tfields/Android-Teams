@@ -15,6 +15,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
@@ -165,7 +166,18 @@ public class RestClient {
                     new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(JSONObject response) {
-                            Log.d(TAG, "onResponse: " + response);
+                            ArrayList<Team> teams = new ArrayList<Team>();
+                            if(method == Request.Method.POST)
+                            {
+                                try {
+                                    team.setId(response.getInt("id"));
+                                } catch (JSONException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                            teams.add(team);
+                            Log.d(TAG, "onResponse: " + teams);
+                            volleyCallback.onSuccess(teams);
                         }
                     }, new Response.ErrorListener() {
                 @Override
